@@ -5,12 +5,13 @@ import { DashboardHeader } from "@/components/dashboard-header"
 import { AppointmentCard } from "@/components/appointment-card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { DonorMetricsBadge } from "@/frontend/components/donor-metrics-badge"
 import { toast } from "sonner"
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 export default function BloodBankAppointments() {
-  const { data: appointments, mutate } = useSWR("/api/appointments", fetcher)
+  const { data: appointments, mutate } = useSWR("/api/appointments", fetcher, { refreshInterval: 5000 })
 
   const handleAction = async (id: string, action: string) => {
     const res = await fetch(`/api/appointments/${id}`, {
@@ -42,11 +43,12 @@ export default function BloodBankAppointments() {
           </TabsList>
           <TabsContent value="booked" className="mt-4 space-y-3">
             {booked.length > 0 ? (
-              booked.map((apt: { id: string; status: string; qrCode: string; slotDate: string; slotTime: string; donorName: string; donorBloodGroup: string }) => (
+              booked.map((apt: { id: string; status: string; qrCode: string; slotDate: string; slotTime: string; donorName: string; donorBloodGroup: string; donorTrustScore: number }) => (
                 <AppointmentCard
                   key={apt.id}
                   appointment={apt}
                   showDonor
+                  showMetrics
                   actions={
                     <Button size="sm" onClick={() => handleAction(apt.id, "check_in")}>
                       Check In
@@ -62,11 +64,12 @@ export default function BloodBankAppointments() {
           </TabsContent>
           <TabsContent value="checked_in" className="mt-4 space-y-3">
             {checkedIn.length > 0 ? (
-              checkedIn.map((apt: { id: string; status: string; qrCode: string; slotDate: string; slotTime: string; donorName: string; donorBloodGroup: string }) => (
+              checkedIn.map((apt: { id: string; status: string; qrCode: string; slotDate: string; slotTime: string; donorName: string; donorBloodGroup: string; donorTrustScore: number }) => (
                 <AppointmentCard
                   key={apt.id}
                   appointment={apt}
                   showDonor
+                  showMetrics
                   actions={
                     <Button size="sm" onClick={() => handleAction(apt.id, "complete")}>
                       Mark Complete
@@ -82,8 +85,8 @@ export default function BloodBankAppointments() {
           </TabsContent>
           <TabsContent value="completed" className="mt-4 space-y-3">
             {completed.length > 0 ? (
-              completed.map((apt: { id: string; status: string; qrCode: string; slotDate: string; slotTime: string; donorName: string; donorBloodGroup: string }) => (
-                <AppointmentCard key={apt.id} appointment={apt} showDonor />
+              completed.map((apt: { id: string; status: string; qrCode: string; slotDate: string; slotTime: string; donorName: string; donorBloodGroup: string; donorTrustScore: number }) => (
+                <AppointmentCard key={apt.id} appointment={apt} showDonor showMetrics />
               ))
             ) : (
               <div className="rounded-lg border p-8 text-center">

@@ -1,0 +1,72 @@
+﻿Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 6.0s
+  Skipping validation of types
+  Collecting page data using 19 workers ...
+  Generating static pages using 19 workers (0/47) ...
+  Generating static pages using 19 workers (11/47) 
+  Generating static pages using 19 workers (23/47) 
+  Generating static pages using 19 workers (35/47) 
+Γ£ô Generating static pages using 19 workers (47/47) in 1015.0ms
+  Finalizing page optimization ...
+
+Route (app)
+Γöî Γùï /
+Γö£ Γùï /_not-found
+Γö£ Γùï /admin
+Γö£ Γùï /admin/analytics
+Γö£ Γùï /admin/blood-banks
+Γö£ Γùï /admin/emergencies
+Γö£ Γùï /admin/rare-donors
+Γö£ Γùï /admin/users
+Γö£ ╞Æ /api/admin/audit-logs
+Γö£ ╞Æ /api/admin/rare-donors
+Γö£ ╞Æ /api/admin/stats
+Γö£ ╞Æ /api/admin/users
+Γö£ ╞Æ /api/admin/users/[id]
+Γö£ ╞Æ /api/appointments
+Γö£ ╞Æ /api/appointments/[id]
+Γö£ ╞Æ /api/appointments/scan
+Γö£ ╞Æ /api/auth/login
+Γö£ ╞Æ /api/auth/logout
+Γö£ ╞Æ /api/auth/me
+Γö£ ╞Æ /api/auth/register
+Γö£ ╞Æ /api/blood-banks
+Γö£ ╞Æ /api/blood-banks/[id]
+Γö£ ╞Æ /api/blood-banks/inventory
+Γö£ ╞Æ /api/blood-banks/slots
+Γö£ ╞Æ /api/blood-banks/slots/[id]
+Γö£ ╞Æ /api/donors
+Γö£ ╞Æ /api/emergency
+Γö£ ╞Æ /api/emergency/[id]
+Γö£ ╞Æ /api/notifications
+Γö£ ╞Æ /api/qr
+Γö£ ╞Æ /api/rare-donors/alerts
+Γö£ ╞Æ /api/rare-donors/profile
+Γö£ ╞Æ /api/rare-donors/request
+Γö£ Γùï /blood-bank
+Γö£ Γùï /blood-bank/appointments
+Γö£ Γùï /blood-bank/emergency
+Γö£ Γùï /blood-bank/inventory
+Γö£ Γùï /blood-bank/scan
+Γö£ Γùï /blood-bank/slots
+Γö£ Γùï /donor
+Γö£ Γùï /donor/appointments
+Γö£ Γùï /donor/book
+Γö£ Γùï /donor/emergency
+Γö£ Γùï /donor/history
+Γö£ Γùï /donor/profile
+Γö£ ╞Æ /donor/qr/[id]
+Γö£ Γùï /hospital
+Γö£ Γùï /hospital/emergency
+Γö£ Γùï /hospital/inventory
+Γö£ Γùï /hospital/search
+Γö£ Γùï /login
+Γöö Γùï /register
+
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+

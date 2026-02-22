@@ -1,29 +1,35 @@
 import { NextResponse } from "next/server"
-import { donors, bloodBanks, hospitals, admins } from "@/lib/data/store"
+import dbConnect from "@/database/db"
+import { Donor, BloodBank, Hospital, Admin, Institution } from "@/database/models"
 import { createToken, setAuthCookie } from "@/lib/auth"
 import type { UserRole } from "@/lib/data/types"
 
 export async function POST(req: Request) {
+  await dbConnect()
+
   const { email, password, role } = await req.json() as { email: string; password: string; role: UserRole }
 
   if (!email || !password || !role) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
   }
 
-  let user: { id: string; name: string; email: string; password: string } | undefined
+  let user: { id: string; name: string; email: string; password: string } | null = null
 
   switch (role) {
     case "donor":
-      user = Array.from(donors.values()).find(d => d.email === email)
+      user = await Donor.findOne({ email }).lean() as any
       break
     case "blood_bank":
-      user = Array.from(bloodBanks.values()).find(b => b.email === email)
+      user = await BloodBank.findOne({ email }).lean() as any
       break
     case "hospital":
-      user = Array.from(hospitals.values()).find(h => h.email === email)
+      user = await Hospital.findOne({ email }).lean() as any
       break
     case "admin":
-      user = Array.from(admins.values()).find(a => a.email === email)
+      user = await Admin.findOne({ email }).lean() as any
+      break
+    case "institution":
+      user = await Institution.findOne({ email }).lean() as any
       break
   }
 

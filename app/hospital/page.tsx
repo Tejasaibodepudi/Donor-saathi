@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Search, AlertTriangle, Package, Activity } from "lucide-react"
 import Link from "next/link"
+import { FEATURE_FLAGS } from "@/lib/features"
+import { RareBloodNetworkCard } from "@/frontend/components/rare-blood-network-card"
 import type { EmergencyRequest } from "@/lib/data/types"
 import useSWR from "swr"
 
@@ -97,6 +99,13 @@ export default function HospitalDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Rare Blood Network (Feature Flagged) */}
+        {FEATURE_FLAGS.RARE_DONOR_REGISTRY && (
+          <div className="mt-6">
+            <RareBloodNetworkCard />
+          </div>
+        )}
       </div>
     </div>
   )

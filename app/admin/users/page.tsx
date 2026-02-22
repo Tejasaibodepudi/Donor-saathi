@@ -86,6 +86,7 @@ export default function AdminUsersPage() {
                   <SelectItem value="donor">Donors</SelectItem>
                   <SelectItem value="blood_bank">Blood Banks</SelectItem>
                   <SelectItem value="hospital">Hospitals</SelectItem>
+                  <SelectItem value="institution">Institutions / Colleges</SelectItem>
                   <SelectItem value="admin">Admins</SelectItem>
                 </SelectContent>
               </Select>

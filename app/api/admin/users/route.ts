@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server"
-import { donors, bloodBanks, hospitals } from "@/lib/data/store"
+import dbConnect from "@/database/db"
+import { Donor, BloodBank, Hospital, Institution } from "@/database/models"
 import { getAuthToken } from "@/lib/auth"
 
 export async function GET(req: Request) {
+  await dbConnect()
   const payload = await getAuthToken()
   if (!payload || payload.role !== "admin") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -14,18 +16,27 @@ export async function GET(req: Request) {
   const results: Record<string, unknown>[] = []
 
   if (!type || type === "donor") {
-    Array.from(donors.values()).forEach(({ password: _, ...d }) => {
+    const donors = await Donor.find({}).select("-password -_id").lean() as any[]
+    donors.forEach(d => {
       results.push({ ...d, role: "donor", verified: d.status === "active", blocked: d.status === "blocked" })
     })
   }
   if (!type || type === "blood_bank") {
-    Array.from(bloodBanks.values()).forEach(({ password: _, ...b }) => {
+    const bbs = await BloodBank.find({}).select("-password -_id").lean() as any[]
+    bbs.forEach(b => {
       results.push({ ...b, role: "blood_bank", verified: b.status === "verified", blocked: b.status === "blocked" })
     })
   }
   if (!type || type === "hospital") {
-    Array.from(hospitals.values()).forEach(({ password: _, ...h }) => {
+    const hospitals = await Hospital.find({}).select("-password -_id").lean() as any[]
+    hospitals.forEach(h => {
       results.push({ ...h, role: "hospital", verified: h.status === "verified", blocked: h.status === "blocked" })
+    })
+  }
+  if (!type || type === "institution") {
+    const institutions = await Institution.find({}).select("-password -_id").lean() as any[]
+    institutions.forEach(i => {
+      results.push({ ...i, role: "institution", verified: i.status === "verified", blocked: i.status === "blocked" })
     })
   }
 

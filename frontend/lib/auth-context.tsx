@@ -15,7 +15,7 @@ interface AuthContextType {
   isLoading: boolean
   isAuthenticated: boolean
   login: (email: string, password: string, role: UserRole) => Promise<{ success: boolean; error?: string }>
-  register: (data: Record<string, string>) => Promise<{ success: boolean; error?: string }>
+  register: (data: Record<string, any>) => Promise<{ success: boolean; error?: string }>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
 }
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const register = async (data: Record<string, string>) => {
+  const register = async (data: Record<string, any>) => {
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",

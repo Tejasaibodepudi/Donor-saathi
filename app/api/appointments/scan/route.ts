@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server"
-import { appointments, donors, bloodBanks, donationSlots } from "@/lib/data/store"
+import dbConnect from "@/database/db"
+import { Appointment, Donor, BloodBank, DonationSlot } from "@/database/models"
 import { getAuthToken } from "@/lib/auth"
 
 export async function POST(req: Request) {
+  await dbConnect()
   const payload = await getAuthToken()
   if (!payload || payload.role !== "blood_bank") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   const { qrCode } = await req.json()
-  const apt = Array.from(appointments.values()).find(a => a.qrCode === qrCode)
+  const apt = await Appointment.findOne({ qrCode }).lean() as any
 
   if (!apt) {
     return NextResponse.json({ error: "Invalid QR code - appointment not found" }, { status: 404 })
@@ -19,9 +21,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "This appointment is for a different blood bank" }, { status: 403 })
   }
 
-  const donor = donors.get(apt.donorId)
-  const bb = bloodBanks.get(apt.bloodBankId)
-  const slot = donationSlots.get(apt.slotId)
+  const [donor, bb, slot] = await Promise.all([
+    Donor.findOne({ id: apt.donorId }).lean() as Promise<any>,
+    BloodBank.findOne({ id: apt.bloodBankId }).lean() as Promise<any>,
+    DonationSlot.findOne({ id: apt.slotId }).lean() as Promise<any>
+  ])
 
   return NextResponse.json({
     appointment: apt,

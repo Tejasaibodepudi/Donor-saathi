@@ -13,6 +13,7 @@ const navItems = [
   { title: "Dashboard", href: "/blood-bank", icon: LayoutDashboard },
   { title: "Manage Slots", href: "/blood-bank/slots", icon: CalendarDays },
   { title: "Appointments", href: "/blood-bank/appointments", icon: Calendar },
+  { title: "Drive Requests", href: "/blood-bank/drives", icon: Calendar },
   { title: "QR Scanner", href: "/blood-bank/scan", icon: ScanLine },
   { title: "Inventory", href: "/blood-bank/inventory", icon: Boxes },
   { title: "Emergency", href: "/blood-bank/emergency", icon: AlertTriangle },

@@ -2,7 +2,8 @@
 
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
+import { FEATURE_FLAGS } from "@/lib/features"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import {
@@ -25,6 +26,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { user, isLoading } = useAuth()
   const router = useRouter()
 
+  const navItems = useMemo(() => {
+    if (FEATURE_FLAGS.RARE_DONOR_REGISTRY) {
+      return [...adminNav, { title: "Rare Donors", href: "/admin/rare-donors", icon: Users }]
+    }
+    return adminNav
+  }, [])
+
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "admin")) {
       router.push("/login")
@@ -41,7 +49,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <SidebarProvider>
-      <DashboardSidebar navItems={adminNav} roleLabel="Admin" roleColor="bg-amber-600 text-white" />
+      <DashboardSidebar navItems={navItems} roleLabel="Admin" roleColor="bg-amber-600 text-white" />
       <SidebarInset>{children}</SidebarInset>
     </SidebarProvider>
   )

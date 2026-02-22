@@ -11,8 +11,10 @@ import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Calendar, Droplets, Heart, Shield, AlertTriangle } from "lucide-react"
 import Link from "next/link"
+import { RareDonorCard } from "@/frontend/components/rare-donor-card"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
+import { FEATURE_FLAGS } from "@/lib/features"
 import type { EmergencyRequest } from "@/lib/data/types"
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
@@ -25,6 +27,27 @@ export default function DonorDashboard() {
 
   const donor = donors?.find((d: { email: string }) => d.email === user?.email)
   const upcomingApts = appointments?.filter((a: { status: string }) => a.status === "booked" || a.status === "checked_in") || []
+
+  // Calculate donation eligibility (90 days cooldown)
+  const calculateEligibility = () => {
+    if (!donor?.lastDonation) {
+      return { eligible: true, daysRemaining: 0, message: "Eligible to donate" }
+    }
+    const lastDonationDate = new Date(donor.lastDonation)
+    const daysSinceLastDonation = Math.floor((Date.now() - lastDonationDate.getTime()) / (1000 * 60 * 60 * 24))
+    const daysRemaining = Math.max(0, 90 - daysSinceLastDonation)
+    
+    return {
+      eligible: daysRemaining === 0,
+      daysRemaining,
+      daysSince: daysSinceLastDonation,
+      message: daysRemaining > 0 
+        ? `Wait ${daysRemaining} more days` 
+        : "Eligible to donate"
+    }
+  }
+
+  const eligibility = calculateEligibility()
 
   const toggleAvailability = async () => {
     const res = await fetch("/api/donors", {
@@ -72,6 +95,13 @@ export default function DonorDashboard() {
             value={donor?.bloodGroup || "N/A"}
             icon={Heart}
           />
+          <StatCard
+            title="Donation Status"
+            value={eligibility.eligible ? "Eligible" : "Not Eligible"}
+            icon={AlertTriangle}
+            subtitle={eligibility.message}
+            variant={eligibility.eligible ? "default" : "destructive"}
+          />
         </div>
 
         {/* Availability Toggle + Quick Actions */}
@@ -94,8 +124,10 @@ export default function DonorDashboard() {
           </Card>
           <Card>
             <CardContent className="flex items-center gap-4 p-5">
-              <Button asChild className="flex-1">
-                <Link href="/donor/book">Book Donation</Link>
+              <Button asChild className="flex-1" disabled={!eligibility.eligible}>
+                <Link href="/donor/book">
+                  {eligibility.eligible ? "Book Donation" : `Wait ${eligibility.daysRemaining} days`}
+                </Link>
               </Button>
               <Button variant="outline" asChild className="flex-1">
                 <Link href="/donor/appointments">View Appointments</Link>
@@ -149,6 +181,13 @@ export default function DonorDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Rare Donor Program (Feature Flagged) */}
+        {FEATURE_FLAGS.RARE_DONOR_REGISTRY && (
+          <div className="mt-6">
+            <RareDonorCard />
+          </div>
+        )}
       </div>
     </>
   )

@@ -3,13 +3,14 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
 import { AuthProvider } from '@/lib/auth-context'
+import { I18nProvider } from '@/components/i18n-provider'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'BloodConnect - Smart Blood Supply Network',
+  title: 'Donor Saathi - Smart Blood Supply Network',
   description: 'A platform connecting donors, blood banks, hospitals, and administrators for efficient blood supply management.',
   icons: {
     icon: [
@@ -38,10 +39,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased">
-        <AuthProvider>
-          {children}
-          <Toaster richColors position="top-right" />
-        </AuthProvider>
+        <I18nProvider>
+          <AuthProvider>
+            {children}
+            <Toaster richColors position="top-right" />
+          </AuthProvider>
+        </I18nProvider>
         <Analytics />
       </body>
     </html>

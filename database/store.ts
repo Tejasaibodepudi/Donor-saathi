@@ -2,7 +2,9 @@ import type {
   Donor, BloodBank, Hospital, Admin,
   DonationSlot, Appointment, InventoryItem,
   EmergencyRequest, Notification, BloodGroup,
+  RareDonorProfile, RareDonorRequest, RareAlertQueue, AdminAuditLog,
 } from "./types"
+import { FEATURE_FLAGS } from "@/lib/features"
 
 // --- In-memory stores ---
 export const donors = new Map<string, Donor>()
@@ -14,6 +16,15 @@ export const appointments = new Map<string, Appointment>()
 export const inventory = new Map<string, InventoryItem>()
 export const emergencyRequests = new Map<string, EmergencyRequest>()
 export const notifications = new Map<string, Notification>()
+
+// --- RARE BLOOD GROUP REGISTRY STORES ---
+// ⚠️ VOLATILITY WARNING: Server restart = data loss. 
+// These in-memory stores are ephemeral. A production environment must replace these Maps 
+// with a robust persistent database (e.g., PostgreSQL/MongoDB) to prevent losing rare donors.
+export const rareDonorProfiles = new Map<string, RareDonorProfile>()
+export const rareDonorRequests = new Map<string, RareDonorRequest>()
+export const rareAlertQueue = new Map<string, RareAlertQueue>()
+export const adminAuditLogs = new Map<string, AdminAuditLog>()
 
 // --- Helper ---
 let counter = 100
@@ -111,7 +122,7 @@ function seed() {
   // Admin
   const seedAdmins: Admin[] = [
     {
-      id: "admin_1", name: "System Admin", email: "admin@demo.com", password: "password",
+      id: "admin_1", name: "System Admin", email: "admin@donorsaathi.com", password: "Donorsaathi@123",
       role: "admin", createdAt: "2024-01-01T00:00:00Z",
     },
   ]
@@ -233,6 +244,60 @@ function seed() {
   seedInventory.forEach(i => inventory.set(i.id, i))
   seedEmergency.forEach(e => emergencyRequests.set(e.id, e))
   seedNotifications.forEach(n => notifications.set(n.id, n))
+
+  // Seed Rare Donor Registry (only if feature flag is active)
+  if (FEATURE_FLAGS.RARE_DONOR_REGISTRY) {
+    // 1. Rare Profiles
+    rareDonorProfiles.set("rare_1", {
+      id: "rare_1",
+      userId: "donor_4", // Sara Khan, AB-
+      bloodGroup: "AB-",
+      isRareConfirmed: true,
+      privacyLevel: "ANONYMIZED",
+      emergencyContactEnabled: true,
+      isActive: true,
+      lastAvailabilityUpdate: today.toISOString(),
+      verificationStatus: "VERIFIED",
+      verifiedByAdminId: "admin_1",
+      verificationProofUrl: "proof_ab_neg_123.jpg",
+      createdAt: new Date(Date.now() - 864000000).toISOString(),
+      updatedAt: new Date(Date.now() - 86400000).toISOString(),
+    })
+
+    // 2. Rare Requests
+    rareDonorRequests.set("rare_req_1", {
+      id: "rare_req_1",
+      requesterType: "HOSPITAL",
+      requesterId: "hosp_1", // City General Hospital
+      requiredBloodGroup: "AB-",
+      urgencyLevel: "urgent",
+      location: { lat: 19.0825, lng: 72.8815, city: "Mumbai" }, // City General location
+      status: "OPEN",
+      matchedDonorCount: 1, // Will represent isolated anonymized count
+      createdAt: new Date(Date.now() - 3600000).toISOString(),
+      updatedAt: new Date(Date.now() - 3600000).toISOString(),
+    })
+
+    // 3. Rare Alerts
+    rareAlertQueue.set("rare_alert_1", {
+      id: "rare_alert_1",
+      requestId: "rare_req_1",
+      donorUserId: "donor_4",
+      alertStatus: "PENDING",
+      priorityScore: 95,
+      createdAt: new Date(Date.now() - 3500000).toISOString(),
+    })
+
+    // 4. Audit Log
+    adminAuditLogs.set("audit_1", {
+      id: "audit_1",
+      adminId: "admin_1",
+      action: "VERIFY_DONOR",
+      targetId: "donor_4",
+      details: "Verified AB- proof documentation provided by donor.",
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+    })
+  }
 }
 
 // Auto-seed on import

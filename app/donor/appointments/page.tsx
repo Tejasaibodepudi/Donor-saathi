@@ -11,7 +11,7 @@ import { toast } from "sonner"
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 export default function DonorAppointments() {
-  const { data: appointments, mutate } = useSWR("/api/appointments", fetcher)
+  const { data: appointments, mutate } = useSWR("/api/appointments", fetcher, { refreshInterval: 5000 })
 
   const cancelAppointment = async (id: string) => {
     const res = await fetch(`/api/appointments/${id}`, {

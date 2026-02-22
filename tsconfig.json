@@ -29,6 +29,9 @@
       "@/hooks/*": [
         "./frontend/hooks/*"
       ],
+      "@/lib/*": [
+        "./frontend/lib/*"
+      ],
       "@/lib/utils": [
         "./frontend/lib/utils"
       ],
@@ -38,8 +41,14 @@
       "@/lib/auth": [
         "./backend/lib/auth"
       ],
+      "@/lib/features": [
+        "./backend/lib/features"
+      ],
       "@/lib/data/*": [
         "./database/*"
+      ],
+      "@/locales/*": [
+        "./locales/*"
       ],
       "@/*": [
         "./*"

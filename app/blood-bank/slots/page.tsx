@@ -32,7 +32,8 @@ export default function BloodBankSlots() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
   const { data: slots, mutate } = useSWR<SlotData[]>(
     user ? `/api/blood-banks/slots?bloodBankId=${user.id}&date=${selectedDate}` : null,
-    fetcher
+    fetcher,
+    { refreshInterval: 5000 }
   )
   const [creating, setCreating] = useState(false)
   const [newSlot, setNewSlot] = useState({ date: "", startTime: "09:00", endTime: "10:00", capacity: "5" })

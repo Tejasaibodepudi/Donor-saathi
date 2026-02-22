@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server"
-import { donors, bloodBanks, hospitals } from "@/lib/data/store"
+import dbConnect from "@/database/db"
+import { Donor, BloodBank, Hospital, Institution } from "@/database/models"
 import { getAuthToken } from "@/lib/auth"
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  await dbConnect()
   const payload = await getAuthToken()
   if (!payload || payload.role !== "admin") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -11,33 +13,50 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const { id } = await params
   const { action } = await req.json() as { action: "verify" | "block" | "unblock" }
 
-  // Find user across all stores
-  const donor = donors.get(id)
+  const donor = await Donor.findOne({ id })
   if (donor) {
     if (action === "block") donor.status = "blocked"
     else if (action === "unblock") donor.status = "active"
-    donors.set(id, donor)
-    const { password: _, ...safe } = donor
+    await donor.save()
+    const safe = donor.toObject() as any
+    delete safe.password
+    delete safe._id
     return NextResponse.json(safe)
   }
 
-  const bb = bloodBanks.get(id)
+  const bb = await BloodBank.findOne({ id })
   if (bb) {
     if (action === "verify") bb.status = "verified"
     else if (action === "block") bb.status = "blocked"
     else if (action === "unblock") bb.status = "verified"
-    bloodBanks.set(id, bb)
-    const { password: _, ...safe } = bb
+    await bb.save()
+    const safe = bb.toObject() as any
+    delete safe.password
+    delete safe._id
     return NextResponse.json(safe)
   }
 
-  const hosp = hospitals.get(id)
+  const hosp = await Hospital.findOne({ id })
   if (hosp) {
     if (action === "verify") hosp.status = "verified"
     else if (action === "block") hosp.status = "blocked"
     else if (action === "unblock") hosp.status = "verified"
-    hospitals.set(id, hosp)
-    const { password: _, ...safe } = hosp
+    await hosp.save()
+    const safe = hosp.toObject() as any
+    delete safe.password
+    delete safe._id
+    return NextResponse.json(safe)
+  }
+
+  const inst = await Institution.findOne({ id })
+  if (inst) {
+    if (action === "verify") inst.status = "verified"
+    else if (action === "block") inst.status = "blocked"
+    else if (action === "unblock") inst.status = "verified"
+    await inst.save()
+    const safe = inst.toObject() as any
+    delete safe.password
+    delete safe._id
     return NextResponse.json(safe)
   }
 

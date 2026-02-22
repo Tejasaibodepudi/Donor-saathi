@@ -1,10 +1,11 @@
 export type BloodGroup = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-"
 
-export type UserRole = "donor" | "blood_bank" | "hospital" | "admin"
+export type UserRole = "donor" | "blood_bank" | "hospital" | "admin" | "institution"
 
 export type DonorStatus = "active" | "inactive" | "blocked"
 export type BloodBankStatus = "pending" | "verified" | "blocked"
 export type HospitalStatus = "pending" | "verified" | "blocked"
+export type InstitutionStatus = "pending" | "verified" | "blocked"
 export type AppointmentStatus = "booked" | "checked_in" | "completed" | "cancelled"
 export type EmergencyPriority = "critical" | "urgent" | "normal"
 export type EmergencyStatus = "active" | "partially_fulfilled" | "fulfilled" | "expired"
@@ -134,4 +135,101 @@ export interface Notification {
   createdAt: string
 }
 
-export type AnyUser = (Donor & { role: "donor" }) | (BloodBank & { role: "blood_bank" }) | (Hospital & { role: "hospital" }) | (Admin & { role: "admin" })
+export interface Institution {
+  id: string
+  name: string
+  email: string
+  password: string
+  phone: string
+  address: string
+  city: string
+  state: string
+  lat: number
+  lng: number
+  status: InstitutionStatus
+  createdAt: string
+}
+
+export type AnyUser = (Donor & { role: "donor" }) | (BloodBank & { role: "blood_bank" }) | (Hospital & { role: "hospital" }) | (Admin & { role: "admin" }) | (Institution & { role: "institution" })
+
+// --- CORPORATE / COLLEGE BLOOD DRIVE MODULE ---
+export type BloodDriveStatus = "pending" | "approved" | "completed" | "cancelled" | "declined"
+
+export interface BloodDrive {
+  id: string
+  institutionId: string
+  bloodBankId: string
+  date: string
+  name: string
+  status: BloodDriveStatus
+  estimatedDonors: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface BloodDriveDonor {
+  id: string
+  driveId: string
+  name: string
+  bloodGroup: BloodGroup | "Unknown"
+  status: "registered" | "donated"
+  createdAt: string
+}
+
+// --- RARE BLOOD GROUP REGISTRY MODULE (APPEND ONLY) ---
+
+export type RarePrivacyLevel = "ANONYMIZED" | "EMERGENCY_ONLY" | "FULL_ADMIN_ONLY"
+export type RareVerificationStatus = "PENDING" | "VERIFIED" | "REJECTED"
+export type RareRequestStatus = "OPEN" | "MATCHING" | "ALERT_SENT" | "FULFILLED" | "CLOSED"
+export type RareAlertStatus = "PENDING" | "SENT" | "ACKNOWLEDGED" | "DECLINED"
+
+export interface RareDonorProfile {
+  id: string
+  userId: string // FK to existing user (soft-linked)
+  bloodGroup: BloodGroup
+  isRareConfirmed: boolean
+  privacyLevel: RarePrivacyLevel
+  emergencyContactEnabled: boolean
+  isActive: boolean
+  lastAvailabilityUpdate: string // ISO timestamp
+  verificationStatus: RareVerificationStatus
+  verifiedByAdminId: string | null
+  verificationProofUrl: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface RareDonorRequest {
+  id: string
+  requesterType: "HOSPITAL" | "BLOOD_BANK"
+  requesterId: string
+  requiredBloodGroup: BloodGroup
+  urgencyLevel: EmergencyPriority
+  location: {
+    lat: number
+    lng: number
+    city: string
+  }
+  status: RareRequestStatus
+  matchedDonorCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface RareAlertQueue {
+  id: string
+  requestId: string
+  donorUserId: string
+  alertStatus: RareAlertStatus
+  priorityScore: number
+  createdAt: string
+}
+
+export interface AdminAuditLog {
+  id: string
+  adminId: string
+  action: "VERIFY_DONOR" | "REJECT_DONOR" | "OVERRIDE_ROUTING" | "ABUSE_FLAG"
+  targetId: string // e.g., donor userId or requestId
+  details: string
+  createdAt: string
+}

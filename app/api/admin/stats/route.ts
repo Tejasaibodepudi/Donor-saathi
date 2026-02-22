@@ -1,41 +1,45 @@
 import { NextResponse } from "next/server"
-import { donors, bloodBanks, hospitals, admins, appointments, emergencyRequests, inventory } from "@/lib/data/store"
+import dbConnect from "@/database/db"
+import { Donor, BloodBank, Hospital, Admin, Appointment, EmergencyRequest, InventoryItem } from "@/database/models"
 import { getAuthToken } from "@/lib/auth"
 
 export async function GET() {
+  await dbConnect()
   const payload = await getAuthToken()
   if (!payload || payload.role !== "admin") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const allDonors = Array.from(donors.values())
-  const allBBs = Array.from(bloodBanks.values())
-  const allHospitals = Array.from(hospitals.values())
-  const allAdmins = Array.from(admins.values())
-  const allAppointments = Array.from(appointments.values())
-  const allEmergencies = Array.from(emergencyRequests.values())
-  const allInventory = Array.from(inventory.values())
+  const [donors, bbs, hospitals, admins, appointments, emergencies, inventory] = await Promise.all([
+    Donor.countDocuments(),
+    BloodBank.countDocuments(),
+    Hospital.countDocuments(),
+    Admin.countDocuments(),
+    Appointment.find({}).lean() as Promise<any[]>,
+    EmergencyRequest.find({}).lean() as Promise<any[]>,
+    InventoryItem.find({}).lean() as Promise<any[]>
+  ])
 
-  // Inventory summary by blood group
+  // Inventory summary
   const inventorySummary: Record<string, number> = {}
-  allInventory.forEach(i => {
+  inventory.forEach((i: any) => {
     inventorySummary[i.bloodGroup] = (inventorySummary[i.bloodGroup] || 0) + i.units
   })
 
-  // Appointments by status
+  // Appointments
   const appointmentsByStatus: Record<string, number> = {}
-  allAppointments.forEach(a => {
+  appointments.forEach((a: any) => {
     appointmentsByStatus[a.status] = (appointmentsByStatus[a.status] || 0) + 1
   })
 
   return NextResponse.json({
-    totalUsers: allDonors.length + allBBs.length + allHospitals.length + allAdmins.length,
-    donors: allDonors.length,
-    bloodBanks: allBBs.length,
-    hospitals: allHospitals.length,
-    admins: allAdmins.length,
-    totalAppointments: allAppointments.length,
-    activeEmergencies: allEmergencies.filter(e => e.status === "active" || e.status === "partially_fulfilled").length,
+    totalUsers: donors + bbs + hospitals + admins,
+    donors,
+    bloodBanks: bbs,
+    hospitals,
+    admins,
+    totalAppointments: appointments.length,
+    activeEmergencies: emergencies.filter(e => e.status === "active" || e.status === "partially_fulfilled").length,
     inventorySummary,
     appointmentsByStatus,
   })

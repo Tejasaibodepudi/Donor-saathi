@@ -4,7 +4,11 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { ScanLine, Search, Loader2 } from "lucide-react"
+import { ScanLine, Search, Loader2, AlertCircle } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import dynamic from "next/dynamic"
+
+const Scanner = dynamic(() => import('@yudiel/react-qr-scanner').then((mod) => mod.Scanner), { ssr: false, loading: () => <div className="flex flex-col items-center justify-center h-full text-muted-foreground"><Loader2 className="h-8 w-8 animate-spin mb-2" /><span>Loading Scanner...</span></div> })
 
 interface QRScannerProps {
   onScan: (code: string) => Promise<void>
@@ -13,6 +17,7 @@ interface QRScannerProps {
 
 export function QRScanner({ onScan, isLoading }: QRScannerProps) {
   const [code, setCode] = useState("")
+  const [cameraError, setCameraError] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,16 +35,44 @@ export function QRScanner({ onScan, isLoading }: QRScannerProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="mx-auto mb-6 max-w-xs">
-          <div className="relative aspect-square rounded-xl border-2 border-dashed border-primary/30 bg-muted/30 flex flex-col items-center justify-center gap-3 p-6">
-            <div className="absolute inset-4 border-2 border-primary/20 rounded-lg" />
-            <div className="absolute top-4 left-4 h-6 w-6 border-t-2 border-l-2 border-primary rounded-tl" />
-            <div className="absolute top-4 right-4 h-6 w-6 border-t-2 border-r-2 border-primary rounded-tr" />
-            <div className="absolute bottom-4 left-4 h-6 w-6 border-b-2 border-l-2 border-primary rounded-bl" />
-            <div className="absolute bottom-4 right-4 h-6 w-6 border-b-2 border-r-2 border-primary rounded-br" />
-            <ScanLine className="h-10 w-10 text-primary/40" />
-            <p className="text-xs text-muted-foreground text-center">Camera scanning simulated. Enter code below.</p>
-          </div>
+        {cameraError && (
+          <Alert className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Camera access requires HTTPS. For local development, use <code className="text-xs bg-muted px-1 py-0.5 rounded">localhost</code> instead of IP address, or manually enter the QR code below.
+            </AlertDescription>
+          </Alert>
+        )}
+        <div className="mx-auto mb-6 max-w-sm rounded-xl overflow-hidden border-2 border-primary/20 bg-black min-h-[300px] flex items-center justify-center relative">
+          <Scanner
+            constraints={{
+              facingMode: "environment",
+              aspectRatio: 1
+            }}
+            allowMultiple={false}
+            onScan={(result) => {
+              if (result && result.length > 0) {
+                const scannedCode = result[0].rawValue;
+                if (scannedCode && scannedCode !== code) {
+                  setCode(scannedCode);
+                  setCameraError(false);
+                  if (!isLoading) {
+                    onScan(scannedCode);
+                  }
+                }
+              }
+            }}
+            onError={(error) => {
+              console.error("QR Scan Error:", error)
+              setCameraError(true)
+            }}
+            components={{
+              finder: true
+            }}
+            styles={{
+              container: { width: "100%", height: "100%" }
+            }}
+          />
         </div>
 
         <form onSubmit={handleSubmit} className="flex gap-2">
